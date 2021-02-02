@@ -8,19 +8,18 @@ noeud relation::noeudOrigine() const
     return _noeudOrigine;
 }
 
-relationNaire::relationNaire(const noeud &noeudOrigine, const std::vector<noeud> &noeudDest)
-    :relation (noeudOrigine), _noeudDest(noeudDest){}
 
-std::vector<noeud> relationNaire::noeudDest() const
-{
-    return _noeudDest;
-}
+
 
 relationBinaire::relationBinaire(const noeud &noeudOrigine)
-    :relation (noeudOrigine){}
+    :relation (noeudOrigine){
+    //mise en place de false par default pour pas de bug de la fonction affichage
+    _filsGauche.estUnfils(false);
+    _filsDroit.estUnfils(false);}
 
-relationBinaire::relationBinaire(const noeud &noeudOrigine, const noeud &filsG, const noeud &filsD)
+/*relationBinaire::relationBinaire(const noeud &noeudOrigine, const noeud &filsG, const noeud &filsD)
     :relation (noeudOrigine), _filsGauche(filsG), _filsDroit(filsD){}
+*/
 
 void relationBinaire::filsGauche(noeud &n)
 {
@@ -43,3 +42,31 @@ noeud relationBinaire::filsDroit() const
 {
     return  _filsDroit;
 }
+
+
+
+relationNaire::relationNaire(const noeud &noeudOrigine, const std::vector<noeud> &noeudsDest)
+    :relation (noeudOrigine), _noeudsDest(noeudsDest){
+    //ajout de ca
+    for (auto r : _noeudsDest)
+        r.estUnfils(true);
+    }
+
+std::vector<noeud> relationNaire::noeudsDest() const
+{
+    return _noeudsDest;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

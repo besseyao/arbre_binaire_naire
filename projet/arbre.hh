@@ -1,8 +1,11 @@
 #pragma once
 
 #include <sstream>
+#include <algorithm>
 #include "noeud.hh"
 #include "relation.hh"
+
+
 
 class arbre {
     public:
@@ -13,7 +16,7 @@ class arbre {
         std::vector<noeud> noeuds() const;
         void noeuds(std::vector<noeud> & vn);
         virtual void genereRelation() = 0 ;
-        virtual std::string affichage() const = 0;
+        virtual void affichage() const = 0;
     private:
         std::vector<noeud> _noeuds;
 };
@@ -25,8 +28,11 @@ class arbreBinaire : public arbre {
         const std::vector<relationBinaire> &relation() const;
         void addNoeuds(std::vector<noeud> & vn);
         void genereRelation() override ;
-        std::string affichage() const override;
-
+        void affichage() const override;
+        // ajout de methode set relation fils gauche
+        void setRelationFG (noeud &origine,noeud &fg,bool &trouve);
+        // ajout de methode set relation fils droit
+        void setRelationFD (noeud &origine,noeud &fd,bool &trouve);
         std::vector<int> arbreToTable() const;
         void relation(relationBinaire const & r);
 
@@ -38,9 +44,12 @@ class arbreBinaire : public arbre {
 class arbreNaire : public arbre {
     public:
         arbreNaire(std::vector<noeud> const &vn);
+        //methode modifié
         void naireToBinaire(arbreBinaire & arbb);
         void genereRelation() override;
-        std::string affichage() const override;
+        void affichage() const override;
+        //ajout de methode relation
+        void relation(relationNaire const & r);
     private:
         std::vector<relationNaire> _relation;
 };
