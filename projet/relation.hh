@@ -6,7 +6,9 @@ class relation {
     public:
         relation() = default;
         relation(noeud const & noeudOrigine);
-        noeud noeudOrigine() const;
+
+        noeud getNoeudOrigine() const;
+
     private:
         noeud _noeudOrigine;
 };
@@ -15,15 +17,12 @@ class relation {
 class relationBinaire : public relation {
     public:
         relationBinaire(noeud const & noeudOrigine);
-        //supression du deuxieme constructeur
-        //relationBinaire(noeud const & noeudOrigine, noeud const & filsG, noeud const & filsD);
 
-        void filsGauche(noeud & n);
-        void filsDroit(noeud & n);
+        noeud getFilsGauche() const;
+        noeud getFilsDroit() const;
 
-
-        noeud filsGauche() const;
-        noeud filsDroit() const;
+        void setFilsGauche(const noeud & n);
+        void setFilsDroit(const noeud & n);
 
     private:
         noeud _filsGauche;
@@ -34,7 +33,10 @@ class relationBinaire : public relation {
 class relationNaire : public relation {
     public:
         relationNaire(noeud const & noeudOrigine, std::vector<noeud> const & noeudsDest);
-        std::vector<noeud> noeudsDest() const;
+
+        std::vector<noeud> getNoeudsDest() const;
+        void setNoeudsDest(const noeud &n);
+
     private:
         std::vector<noeud> _noeudsDest;
 };

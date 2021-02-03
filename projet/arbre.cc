@@ -1,177 +1,215 @@
 #include "arbre.hh"
-#include <sstream>
 
-arbre::arbre(std::vector<noeud> const &noeuds)
-    :_noeuds(noeuds){}
 
-std::vector<noeud>::iterator arbre::returnNoeud(unsigned int id)
+const std::vector<relationBinaire> &arbreBinaire::getArbreBinaire() const
 {
-    for (auto i (_noeuds.begin()); i!=_noeuds.end(); ++i)
-        if ((*i).id() == id)
-            return i;
-    return _noeuds.end();
+    return _arbreBinaire;
 }
 
-void arbre::ajoutNoeud(const noeud &n)
-{
-    _noeuds.push_back(n);
-}
 
-std::vector<noeud> arbre::noeuds() const
-{
-    return  _noeuds;
-}
-
-void arbre::noeuds(std::vector<noeud> &vn)
-{
-    _noeuds = vn;
-}
-
-arbreBinaire::arbreBinaire(const std::vector<noeud> &vn):arbre(vn){}
-
-
-const std::vector<relationBinaire> &arbreBinaire::relation() const
-{
-    return _relation;
-}
-
-void arbreBinaire::addNoeuds(std::vector<noeud> &vn)
-{
-    noeuds(vn);
-}
-
-void arbreBinaire::setRelationFG(noeud &origine, noeud &fg, bool &trouve){
-    auto i (_relation.begin());
-    while ( i!=_relation.end() && !trouve){
-        if ((*i).noeudOrigine().id()== origine.id()){
-            (*i).filsGauche(fg);
+void arbreBinaire::setFilsG(const noeud &origine, const noeud &fg, bool &trouve){
+    auto i (_arbreBinaire.begin());
+    while ( i!=_arbreBinaire.end() && !trouve){
+        if ((*i).getNoeudOrigine().getId() == origine.getId()){
+            (*i).setFilsGauche(fg);
             trouve=true;
         }
         ++i;
     }
 }
 
-void arbreBinaire::setRelationFD(noeud &origine, noeud &fd, bool &trouve){
-    auto i (_relation.begin());
-    while ( i!=_relation.end() && !trouve){
-        if ((*i).noeudOrigine().id()== origine.id()){
-            (*i).filsDroit(fd);
+void arbreBinaire::setFilsD(const noeud &origine,const noeud &fd, bool &trouve){
+    auto i (_arbreBinaire.begin());
+    while ( i!=_arbreBinaire.end() && !trouve){
+        if ((*i).getNoeudOrigine().getId() == origine.getId()){
+            (*i).setFilsDroit(fd);
             trouve=true;
         }
         ++i;
     }
 }
-
-void arbreBinaire::genereRelation()
-{
-    unsigned int repere;
-
-    for (auto i(0); i < noeuds().size(); ++i){
-
-        auto n = returnNoeud(i);
-        relationBinaire r(*n);
-
-        repere = 2*i+1;
-
-        if( repere <= noeuds().size()){
-
-            r.filsGauche(*returnNoeud(repere));
-
-            if(repere++ <= noeuds().size())
-                r.filsDroit(*returnNoeud(repere));
-        }
-
-        _relation.push_back(r);
-    }
-}
-
 
 void arbreBinaire::affichage() const
 {
-    //suppression de os et mise de std::cout pour le moment
-    for(auto & r : _relation){
-            //breve modif de l'affichage
-            std::cout << r.noeudOrigine().id() << " -- ";
-            if(r.filsGauche().estUnfils())
-                std::cout << r.filsGauche().id() << " ";
+    for(const auto & r : _arbreBinaire){
+            std::cout << r.getNoeudOrigine().getId() << " -- ";
+            if(r.getFilsGauche().getEstUnfils())
+                std::cout << r.getFilsGauche().getId() << " ";
             else std::cout << "x ";
-            if(r.filsDroit().estUnfils())
-                    std::cout << r.filsDroit().id();
+            if(r.getFilsDroit().getEstUnfils())
+                    std::cout << r.getFilsDroit().getId();
             else std::cout << "x ";
             std::cout << "\n";
     }
 }
 
-std::vector<int> arbreBinaire::arbreToTable() const
-{
-    std::vector<int> table;
-    for (size_t i(0); i < relation().size(); ++i) {
-        if(i == 0)
-            table.push_back(relation()[i].noeudOrigine().id());
+void arbreBinaire::ajout(const relationBinaire &r) {
+    _arbreBinaire.push_back(r);
+}
 
-        if(relation()[i].filsGauche().estUnfils())
-            table.push_back(relation()[i].filsGauche().id());
-        if(relation()[i].filsDroit().estUnfils())
-            table.push_back(relation()[i].filsDroit().id());
+
+void arbreBinaire::tabToBin(const std::vector<unsigned int> &tab)
+{
+    // les cases contenants 666 sont une indication pour dire que la case represente un fils gauche/droit vide
+    // et ainsi restituer un arbre tel qu'il doit etre et non en faisaint un remplissage au fur et a mesure
+    unsigned int repere;
+    unsigned int j(0);
+    for (unsigned int i(0); i < tab.size();++i){
+        if (tab[i]!=666){
+            noeud n(tab[i]);
+            relationBinaire r(n);
+
+            repere = 2*j+1;
+            ++j;
+            if( repere < tab.size()){
+                if(tab[repere]!=666){
+                    noeud fg(tab[repere]);
+                    r.setFilsGauche(fg);
+                }
+
+                if(repere+1 < tab.size()){
+                    if(tab[repere+1]!=666){
+                    noeud fd(tab[repere+1]);
+                    r.setFilsDroit(fd);
+                    }
+                }
+            _arbreBinaire.push_back(r);
+            }
+        }
+    }
+}
+
+
+std::vector<unsigned int> arbreBinaire::binToTab() const
+{
+    // les cases contenants 666 sont une indication pour dire que la case represente un fils gauche/droit vide
+    // et ainsi restituer un arbre tel qu'il etait en faisant un tabToBin apres
+    std::vector<unsigned int> table;
+    for (size_t i(0); i < _arbreBinaire.size(); ++i) {
+        if(i == 0)
+            table.push_back(_arbreBinaire[i].getNoeudOrigine().getId());
+
+        if(_arbreBinaire[i].getFilsGauche().getEstUnfils())
+            table.push_back(_arbreBinaire[i].getFilsGauche().getId());
+        else
+            table.push_back(666);
+
+        if(_arbreBinaire[i].getFilsDroit().getEstUnfils())
+            table.push_back(_arbreBinaire[i].getFilsDroit().getId());
+        else
+            table.push_back(666);
 
     }
 
     return table;
 }
 
-void arbreBinaire::relation(const relationBinaire &r) {
-    _relation.push_back(r);
+
+
+
+
+
+
+
+void arbreNaire::affichage() const
+{
+    for(auto & r : _arbreNaire){
+            std::cout << r.getNoeudOrigine().getId() << " -- ";
+            for (auto & n : r.getNoeudsDest()){
+                std::cout << n.getId() << " ";
+            }
+            std::cout << "\n";
+    }
+}
+
+void arbreNaire::ajout (const relationNaire &r){
+    _arbreNaire.push_back(r);
 }
 
 
-//ajout de cette methode
-void arbreNaire::relation (const relationNaire &r){
-    _relation.push_back(r);
+int arbreNaire::getIndNoeudOrigine(const noeud &n) const{
+    for (unsigned int i(0);i<_arbreNaire.size();++i){
+        for (const auto &r : _arbreNaire[i].getNoeudsDest()){
+            if (r.getId()==n.getId()) return i;
+        }
+    }
+    return 0;
 }
 
-arbreNaire::arbreNaire(const std::vector<noeud> &vn)
-    :arbre(vn){}
 
-//methode modifié elle marche bien
+void arbreNaire::binaireToNaire (const arbreBinaire &arbn){
+    if (arbn.getArbreBinaire().size() != 0){
+        for (unsigned int i(0); i <arbn.getArbreBinaire().size(); ++i){
+            if (i==0){
+                noeud origine = arbn.getArbreBinaire()[i].getNoeudOrigine();
+                std::vector<noeud> fils;
+                if(arbn.getArbreBinaire()[i].getFilsGauche().getEstUnfils()) {
+                    noeud fg = arbn.getArbreBinaire()[i].getFilsGauche();
+                    fils.push_back(fg);
+                }
+                relationNaire r (origine,fils);
+                this->ajout(r);
+            }
+            else {
+                if(arbn.getArbreBinaire()[i].getFilsDroit().getEstUnfils()){
+                    noeud fd = arbn.getArbreBinaire()[i].getFilsDroit();
+                    noeud recherche = arbn.getArbreBinaire()[i].getNoeudOrigine();
+                    int j = this->getIndNoeudOrigine(recherche);
+                    this->_arbreNaire[j].setNoeudsDest(fd);
+                }
+                if (arbn.getArbreBinaire()[i].getFilsGauche().getEstUnfils()){
+                    noeud origine = arbn.getArbreBinaire()[i].getNoeudOrigine();
+                    noeud fg = arbn.getArbreBinaire()[i].getFilsGauche();
+                    std::vector<noeud> fils;
+                    fils.push_back(fg);
+                    relationNaire r (origine,fils);
+                    this->ajout(r);
+                }
+            }
+        }
+    }
+}
+
+
+
+
 void arbreNaire::naireToBinaire(arbreBinaire &arbb)
 {
-    std::vector<noeud> vn =  noeuds();
-    if (vn.size() != 0){
+    if (_arbreNaire.size() != 0){
 
-        arbb.noeuds(vn); // Ajouter les noeuds a l'abre binaire
-        for (auto i(0); i < _relation.size(); ++i){
+        for (unsigned int i(0); i < _arbreNaire.size(); ++i){
 
-            for (auto j(0); j < _relation[i].noeudsDest().size(); ++j) {
+            for (unsigned int j(0); j < _arbreNaire[i].getNoeudsDest().size(); ++j) {
                 if(i == 0 && j == 0) {
-                    noeud origin = _relation[i].noeudOrigine();
-                    noeud fg = _relation[0].noeudsDest()[0];
+                    noeud origin = _arbreNaire[i].getNoeudOrigine();
+                    noeud fg = _arbreNaire[0].getNoeudsDest()[0];
                     bool trouve = false;
-                    arbb.setRelationFG(origin,fg,trouve);
+                    arbb.setFilsG(origin,fg,trouve);
                     if (!trouve){
                         relationBinaire r(origin);
-                        r.filsGauche(fg);// Connecter ce noeud a son premier fils gauche
-                        arbb.relation(r);
+                        r.setFilsGauche(fg);
+                        arbb.ajout(r);
                     }
                 }else {
                     if (j==0){
-                        noeud origin = _relation[i].noeudOrigine();
-                        noeud fg = _relation[i].noeudsDest()[j];
+                        noeud origin = _arbreNaire[i].getNoeudOrigine();
+                        noeud fg = _arbreNaire[i].getNoeudsDest()[j];
                         bool trouve = false;
-                        arbb.setRelationFG(origin,fg,trouve);
+                        arbb.setFilsG(origin,fg,trouve);
                         if (!trouve){
-                            relationBinaire r2(_relation[i].noeudOrigine());
-                            r2.filsGauche(_relation[i].noeudsDest()[j]);
-                            arbb.relation(r2);
+                            relationBinaire r(_arbreNaire[i].getNoeudOrigine());
+                            r.setFilsGauche(_arbreNaire[i].getNoeudsDest()[j]);
+                            arbb.ajout(r);
                         }
                     }else {
-                        noeud origin = _relation[i].noeudsDest()[j-1];
-                        noeud fd = _relation[i].noeudsDest()[j];
+                        noeud origin = _arbreNaire[i].getNoeudsDest()[j-1];
+                        noeud fd = _arbreNaire[i].getNoeudsDest()[j];
                         bool trouve = false;
-                        arbb.setRelationFD(origin,fd,trouve);
+                        arbb.setFilsD(origin,fd,trouve);
                         if (!trouve){
-                            relationBinaire r3(_relation[i].noeudsDest()[j-1]);
-                            r3.filsDroit(_relation[i].noeudsDest()[j]);
-                            arbb.relation(r3);
+                            relationBinaire r(_arbreNaire[i].getNoeudsDest()[j-1]);
+                            r.setFilsDroit(_arbreNaire[i].getNoeudsDest()[j]);
+                            arbb.ajout(r);
                         }
                     }
                 }
@@ -180,23 +218,5 @@ void arbreNaire::naireToBinaire(arbreBinaire &arbb)
     }
 }
 
-
-void arbreNaire::genereRelation()
-{
-    std::cout << "GENERER RELATION";
-}
-
-
-//ajout de l'affichage
-void arbreNaire::affichage() const
-{
-    for(auto & r : _relation){
-            std::cout << r.noeudOrigine().id() << " -- ";
-            for (auto & n : r.noeudsDest()){
-                std::cout << n.id() << " ";
-            }
-            std::cout << "\n";
-    }
-}
 
 

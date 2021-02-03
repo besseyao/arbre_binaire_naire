@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <iostream>
 
@@ -7,14 +6,12 @@ class noeud
 {
     public:
         noeud() =default;
-        noeud(unsigned int id);
+        noeud(const unsigned int &id);
         noeud(noeud const & n);
 
-        unsigned int id();
-
-        void estUnfils(bool rep);
-
-        bool estUnfils() const ;
+        unsigned int getId() const ;
+        bool getEstUnfils() const ;
+        void setEstUnfils(const bool &rep);
 
     private:
         unsigned int _id;
